@@ -17,6 +17,36 @@ namespace sksat {
 	};
 
 	struct insn {
+		const std::string operand2str(operand op) const {
+			std::string str;
+			switch(op){
+				#define OP(type) case operand::type: str=#type; break;
+				OP(imm8);
+				OP(imm);
+				OP(r8);
+				OP(r);
+				OP(rm8);
+				OP(rm);
+				OP(es);
+				#undef OP
+				case operand::a:
+					str = "al";
+					break;
+				default:
+					break;
+			}
+			return str;
+		}
+		const std::string to_str() const {
+			std::string str;
+			for(const auto& c : opname) str+=c;
+			if(op1 == operand::none) return str;
+			str += " " + operand2str(op1);
+			if(op2 != operand::none)
+				str += " " + operand2str(op2);
+			return str;
+		}
+
 		std::string_view opname;
 		operand op1, op2;
 	};
@@ -51,10 +81,12 @@ int main(int argc, char **argv){
 	}
 
 	for(size_t i=0;i<sksat::ilist.size();i++){
+		auto str = sksat::ilist[i].to_str();
+		if(str.empty()) continue;
 		std::cout
 			<< "0x" << std::hex << i
 			<< ": "
-			<< sksat::ilist[i].opname
+			<< str
 			<< std::endl;
 	}
 }
